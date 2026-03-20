@@ -1,13 +1,25 @@
 import java.util.*;
 
 public class ProblemSolver {
+    private int hillClimbSteps = 0;
+    private long hillClimbTime = 0;
+    private int hillClimbNodes = 0;
+
     public BoardState hillClimbing(BoardState initial){
+        int steps = 0;
+        long start = System.currentTimeMillis();
+
         BoardState current = new BoardState(initial.getQueens());
         int currentConflicts = current.checkAttackability();
 
         //>>> ChatGPT was used to debug some for loop logic
+        int numNodes = 0;
         while(true){
+            steps++;
+
             ArrayList<BoardState> neighbors = current.getNeighbors();
+            numNodes += neighbors.size();
+
             BoardState bestNeighbor = null;
             int lowestConflicts = currentConflicts;
 
@@ -23,6 +35,9 @@ public class ProblemSolver {
             //<<<
 
                 if(bestNeighbor == null){
+                    hillClimbSteps = steps;
+                    hillClimbTime = System.currentTimeMillis() - start;
+                    hillClimbNodes = numNodes;
                     return current;
                 }
 
@@ -33,6 +48,9 @@ public class ProblemSolver {
                     break;
                 }
         }
+        hillClimbSteps = steps;
+        hillClimbTime = System.currentTimeMillis() - start;
+        hillClimbNodes = numNodes;
         return current;
     }
 
@@ -139,6 +157,10 @@ public class ProblemSolver {
 
         System.out.println("----------Hill-Climbing Algorithm----------");
         for(int n : dimensions){
+            long totalTime = 0;
+            int totalSteps = 0;
+            int totalNodes = 0;
+
             BoardState sampleSol = null;
             int successes = 0;
 
@@ -155,7 +177,15 @@ public class ProblemSolver {
                         sampleSol = output;
                     }
                 }
+
+                totalTime += ps.hillClimbTime;
+                totalSteps += ps.hillClimbSteps;
+                totalNodes += ps.hillClimbNodes;
             }
+
+            double avgTime = (double)totalTime/100;
+            int avgSteps = totalSteps/100;
+            double avgNodes = (double)totalNodes/100;
 
             //Fills sample solution with a board in the case that the 100 tests
             //does not produce a single viable board
@@ -165,7 +195,7 @@ public class ProblemSolver {
 
             double successRate = (float)successes/100;
             double successPercentage = successRate*100;
-            System.out.printf("n: %d | Success: %.3f%%\n", n, successPercentage);
+            System.out.printf("n: %d | Success: %.2f%% | Avg Steps: %d | Avg Nodes: %.3f | Avg Time: %.3f ms\n", n, successPercentage, avgSteps, avgNodes, avgTime);
 
             System.out.println("Sample solution for n = " + n);
             sampleSol.printBoard();
@@ -193,7 +223,7 @@ public class ProblemSolver {
                 sampleSol = ps.geneticAlgorithm(n);
             }
 
-            System.out.println("n: " + n +  " | Success: " + gaSuccesses + "/20");
+            System.out.println("n: " + n +  " | Successes: " + gaSuccesses + "/20");
             System.out.println("Sample solution for n = " + n);
             sampleSol.printBoard();
             System.out.println();
